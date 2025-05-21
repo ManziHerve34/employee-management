@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+body {
+	background: url('https://www.artify360.com/wp-content/uploads/2022/12/Employee-Management-Software-in-Bahrain.jpg');
+       ;
+	background-size: cover;
+}
+        .register-container {
+            max-width: 450px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        .alert {
+            margin-top: 20px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="register-container">
+            <h2 class="text-center mb-4">Register</h2>
+
+            <!-- Alert for displaying messages -->
+            <div th:if="${message}" class="alert" th:classappend="${successful} ? 'alert-success' : 'alert-danger'"
+                role="alert">
+                <span th:text="${message}"></span>
+            </div>
+
+            <!-- Registration Form -->
+            <form th:action="@{/auth/register}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+            
+                <div class="mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="" disabled selected>Select Role</option>
+                        <option value="admin">Admin</option>
+                        <option value="hr_manager">HR Manager</option>
+                    </select>
+                </div>
+            
+                <!-- 📸 New Profile Photo Field -->
+                <div class="mb-3">
+                    <label for="image" class="form-label">Profile Photo</label>
+                    <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                </div>
+            
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+            
+
+            <div class="login-link">
+                <p>Already have an account? <a th:href="@{/auth/login-page}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

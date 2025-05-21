@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Employees</title></head>
+<body>
+
+
+    <!-- edit-employee.html -->
+<div class="container mt-4">
+    <h2>Edit Employee</h2>
+    <form id="editForm" class="mt-4">
+        <input type="hidden" id="employeeId">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="department" class="form-label">Qualification</label>
+            <input type="text" class="form-control" id="qualification">
+        </div>
+        <div class="mb-3">
+            <label for="position" class="form-label">Position</label>
+            <input type="text" class="form-control" id="position">
+        </div>
+        
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+            <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+
+
+
+
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get employee ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const employeeId = urlParams.get('id');
+    
+    if (employeeId) {
+        // Fetch employee data
+        fetch(`/employees/${employeeId}`)
+            .then(response => response.json())
+            .then(employee => {
+                // Populate form
+                document.getElementById('employeeId').value = employee.id;
+                document.getElementById('name').value = employee.name || '';
+                document.getElementById('email').value = employee.email || '';
+                document.getElementById('qualification').value = employee.qualification || '';
+                document.getElementById('position').value = employee.position || '';
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    
+    // Handle form submission
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const employee = {
+            id: document.getElementById('employeeId').value,
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            department: document.getElementById('qualification').value,
+            position: document.getElementById('position').value,
+        };
+        
+        // Send PUT request
+        fetch(`/employees/${employee.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(employee)
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/employees.html'; // Redirect back to list
+            } else {
+                alert('Failed to update employee');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating employee');
+        });
+    });
+});
+</script>
+
+
+</body>
+</html>

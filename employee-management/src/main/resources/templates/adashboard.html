@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <meta name="loggedInUser" content="${session.loggedInUser.username}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+            padding-top: 20px;
+            position: fixed;
+            width: 250px;
+        }
+
+        .sidebar-heading {
+            color: #fff;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            margin: 2px 0;
+        }
+
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .employee-table {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            padding: 20px;
+        }
+
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="sidebar-heading d-flex align-items-center mb-0">
+                <i class="fas fa-users me-2"></i>
+                <span>EMS</span>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto d-flex align-items-center">
+                    <span class="navbar-text text-white me-2">
+                        <strong id="username">Guest</strong>
+                    </span>
+                    <img id="user-avatar" src="https://i.pravatar.cc/35?u=guest" alt="Avatar" class="rounded-circle"
+                        width="35" height="35">
+
+
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard">
+                            <i class="fas fa-fw fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">
+                            <i class="fas fa-fw fa-sign-out-alt"></i>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Mobile Sidebar Toggle -->
+                <div class="d-flex justify-content-between d-md-none mb-4">
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mobileSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h4 class="mb-0">Admin Dashboard</h4>
+                </div>
+
+                <!-- Mobile Sidebar -->
+                <div class="collapse d-md-none mb-3" id="mobileSidebar">
+                    <div class="bg-dark p-3 rounded">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link text-white active" href="/dashboard">
+                                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="/logout">
+                                    <i class="fas fa-fw fa-sign-out-alt"></i>
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row">
+                    <!-- Total Employees Card -->
+                    <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Total Employees</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalEmployees">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HR Staff Card -->
+                    <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            HR Staff</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="hrEmployees">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admins Card -->
+                    <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Admins</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="adminEmployees">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Box -->
+                <div class="search-box">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control"
+                            placeholder="Search employees by name, email ...">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button class="btn btn-secondary" type="button" id="clearSearch" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Employees Table -->
+                <div class="employee-table">
+                    <h5 class="mb-3">Employee List</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="employeeTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Qualification</th>
+                                    <th>Position</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeTableBody">
+                                <!-- Data will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+    <script>
+        // Global variables
+        let allEmployees = [];
+        let successToast, errorToast;
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeComponents();
+            setupEventListeners();
+            fetchEmployees();
+        });
+
+        // Initialize Bootstrap components
+        function initializeComponents() {
+            successToast = new bootstrap.Toast(document.getElementById('successToast'));
+            errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            const clearSearch = document.getElementById('clearSearch');
+
+            // Search with debounce
+            let searchTimeout;
+            searchInput.addEventListener('input', function () {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(performSearch, 300);
+                clearSearch.style.display = this.value ? 'block' : 'none';
+            });
+
+            // Clear search
+            clearSearch.addEventListener('click', function () {
+                searchInput.value = '';
+                clearSearch.style.display = 'none';
+                renderEmployees(allEmployees);
+            });
+
+            // Focus search on '/' key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === '/' && e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+            });
+        }
+
+        // Fetch all employees
+        window.fetchEmployees = function () {
+            fetch('/employees')
+                .then(response => response.json())
+                .then(data => {
+                    allEmployees = data;
+                    renderEmployees(data);
+                    updateStats(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorToast('Error fetching employees');
+                });
+        };
+
+        // Search functionality
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            if (!query) {
+                renderEmployees(allEmployees);
+                return;
+            }
+
+            const filtered = allEmployees.filter(employee => matchesSearch(employee, query));
+            renderEmployees(filtered);
+        }
+
+        // Check if employee matches search query
+        function matchesSearch(employee, query) {
+            const fieldsToSearch = [
+                employee.name,
+                employee.email,
+                employee.department,
+                employee.position,
+                employee.qualification
+            ];
+
+            return fieldsToSearch.some(
+                field => field && field.toLowerCase().includes(query)
+            );
+        }
+
+        // Render employees table
+        function renderEmployees(employees) {
+            const tableBody = document.getElementById('employeeTableBody');
+            tableBody.innerHTML = '';
+
+            if (employees.length === 0) {
+                tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    No employees match your search
+                </td>
+            </tr>`;
+                return;
+            }
+
+            employees.forEach(employee => {
+                // Generate initials for the avatar
+                const initials = employee.name ? getInitials(employee.name) : '?';
+
+                // Generate a consistent color based on the name
+                const avatarColor = generateColorFromName(employee.name || '');
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>
+                <div class="avatar" style="background-color: ${avatarColor}; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                    ${initials}
+                </div>
+            </td>
+            <td>${employee.name || ''}</td>
+            <td>${employee.email || ''}</td>
+            <td>${employee.qualification || ''}</td>
+            <td>${employee.position || ''}</td>
+            `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Helper function to get initials from name
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(word => word.charAt(0))
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
+        }
+
+        // Helper function to generate consistent colors based on name
+        function generateColorFromName(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+
+            // Generate a hue value (0-360) based on the hash
+            const hue = hash % 360;
+
+            // Use HSL for a vibrant but not too light color
+            return `hsl(${hue}, 70%, 50%)`;
+        }
+
+        // Update statistics
+        function updateStats(employees) {
+            // Update employee count
+            document.getElementById('totalEmployees').textContent = employees.length;
+
+            // Fetch app users to get HR and Admin counts
+            fetch('/app_users')
+                .then(response => response.json())
+                .then(users => {
+                    const hrCount = users.filter(user =>
+                        user.role && user.role.toLowerCase() === 'hr_manager'
+                    ).length;
+
+                    const adminCount = users.filter(user =>
+                        user.role && user.role.toLowerCase().includes('admin')
+                    ).length;
+
+                    document.getElementById('hrEmployees').textContent = hrCount;
+                    document.getElementById('adminEmployees').textContent = adminCount;
+                })
+                .catch(error => {
+                    console.error("Failed to fetch app users:", error);
+                    document.getElementById('hrEmployees').textContent = "N/A";
+                    document.getElementById('adminEmployees').textContent = "N/A";
+                });
+        }
+
+
+        // Show success toast
+        function showSuccessToast(message) {
+            document.querySelector('#successToast .toast-body').textContent = message;
+            successToast.show();
+        }
+
+        // Show error toast
+        function showErrorToast(message) {
+            document.querySelector('#errorToast .toast-body').textContent = message;
+            errorToast.show();
+        }
+
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Function to get a cookie by name
+            function getCookie(name) {
+                let value = "; " + document.cookie;
+                let parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(";").shift();
+                return null;
+            }
+
+            // Get the username from the cookie
+            const username = getCookie("username");
+
+            // Update the username and avatar in the navbar
+            const usernameElement = document.getElementById("username");
+            const avatarElement = document.getElementById("user-avatar");
+
+            if (username) {
+                usernameElement.textContent = username;
+                avatarElement.src = `/user-image/${username}`;
+                avatarElement.onerror = function () {
+                    // Fallback if user image not found
+                    this.src = "https://i.pravatar.cc/35?u=" + username;
+                };
+            } else {
+                usernameElement.textContent = "Guest";
+                avatarElement.src = "https://i.pravatar.cc/35?u=guest";
+            }
+        });
+
+
+
+    </script>
+</body>
+
+</html>
